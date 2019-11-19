@@ -1,0 +1,27 @@
+<%- include("../partials/top"); -%>
+
+
+<div class="body">
+    <div class="body-content">
+  
+      <h2 class="title">Upload the CSV file containing the Cross-Connects</h2>
+    
+      <h2 class="row">IMPORTANT: To keep data accuracy, it is recommended that the upload feature be used only once per AZ (only the first time). Once the records are populated, any other connection should be inserted individually - one circuit at a
+        time.</h2>
+  
+      <div class="upload">
+        <form action="/upload" method="POST" encType="multipart/form-data">
+          <input type="file" name="file" accept="*.csv" />
+          <input class="btn btn-primary" type="submit" value="Upload" />
+        </form>
+      </div>
+  
+      <div class="download-template">
+        <a href="/admin/get-template" download>
+          Download Cross-Connect Template
+        </a>
+      </div> 
+  
+    </div>
+
+    <%- include("../partials/bottom"); -%>

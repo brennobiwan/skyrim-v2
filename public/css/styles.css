@@ -1,0 +1,164 @@
+/* structure */
+
+html, body {
+  height: 100%;
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+p {
+  margin: 0;
+}
+
+.body {
+  margin: 0 auto;
+  text-align: center;
+  background-color: #eae9e9;
+  width: 60%;
+  height: 100%;
+}
+
+h1, h2 {
+  margin: 0;
+}
+
+.navbar {
+  font-size: 1.5rem;
+}
+
+.navbar-brand {
+  font-size: 2rem;
+  font-family: 'Noto Serif SC', serif;
+}
+
+.text-secondary {
+  font-size: 1.3rem;
+}
+
+/* index.ejs */
+
+.title {
+  padding: 20% 0 5%;
+  text-align: center;
+  font-family: 'Noto Serif SC', serif;
+}
+
+.description {
+  width: 50%;
+  margin: 0 auto;
+  font-size: 1.5rem;
+}
+
+.logo {
+  width: 10%;
+  padding-top: 10%;
+}
+
+/* footer.ejs */
+
+footer {
+  position: absolute;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* functionalities */
+
+/* search.ejs */
+
+.text-secondary {
+  padding-bottom: 5%;
+}
+
+.row {
+  margin: 0 0 4%;
+}
+
+.body-content {
+  width: 60%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* result.ejs */
+
+.container-fluid{
+  padding: 0;
+  margin: 0;
+}
+
+table {
+  background-color: #f7f7f7;
+  text-align: center;
+}
+
+.table {
+  margin: 0;
+}
+
+.title-result {
+  padding: 7% 0 1%;
+  text-align: center;
+}
+
+th {
+  font-size: 1.5rem;
+}
+
+td {
+  font-size: 1.3rem;
+}
+
+.hoverTable:hover {
+  color: red;
+}
+
+.download-csv-button {
+  text-align: center;
+  margin-bottom: 1%;
+}
+
+.return-button {
+  text-align: center;
+  margin-top: 1%;
+}
+
+
+/* Patch-Panel */
+
+.card {
+  background-color: #f7f7f7;
+  color: black;
+}
+
+.rackCapacity {
+  font-size: 1.3rem;
+}
+
+.bar {
+  border-radius: 7px;
+}
+
+.progress-bar {
+  background-color: #1dd1a1;
+  color: black;
+}
+
+.bg-busy {
+  background-color: #ff6b6b;
+}
+
+.bg-almost {
+  background-color: #feca57;
+}
+
+.center {
+  margin: 0 auto;
+}
+
+.download-template{
+  margin: 0 auto;
+  margin-top: 4%
+}

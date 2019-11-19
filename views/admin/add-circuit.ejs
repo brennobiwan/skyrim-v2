@@ -1,0 +1,68 @@
+<%- include("../partials/top"); -%>
+
+
+<div class="body">
+    <div class="body-content">
+  
+      <h2 class="title">Fill in the circuit information and hit "Submit".</h2>
+  
+  
+      <form action="/admin/add-circuit" method="post" onsubmit="return confirm('Please, confirm the data before hitting OK');">
+        <input type="hidden" name="page" value="addcircuit">
+  
+        <div class="row">
+          <label for="">Ticket Number</label>
+          <input class="form-control" type="text" name="ticket" autocomplete="off" placeholder="" autofocus="true" />
+        </div>
+  
+        <div class="row">
+          <label for="">Cross-Connect ID</label>
+          <input class="form-control" type="text" name="serialId" autocomplete="off" placeholder="" autofocus="true" required />
+        </div>
+  
+        <div class="row">
+          <label for="">Service Provider / Peer</label>
+          <input class="form-control" type="text" name="serviceProvider" autocomplete="off" required />
+        </div>
+  
+        <div class="row">
+          <label for="">Bandwidth (Gbps)</label>
+          <input class="form-control" type=Number name="bandwidth" placeholder="100" autocomplete="off" required />
+        </div>
+  
+        <div class="row">
+          <div class="col">
+            <label for="">Patch-Panel ID</label>
+            <input type="text" name="patchPanel" class="form-control" autocomplete="off" required />
+          </div>
+  
+          <div class="col">
+            <label for="">Patch-Panel Port</label>
+            <input type="text" name="patchPanelPort" class="form-control" autocomplete="off" required />
+          </div>
+        </div>
+  
+        <div class="row">
+          <div class="col">
+            <label for="">Device's hostname</label>
+            <input type="text" name="device" class="form-control" autocomplete="off" required />
+          </div>
+  
+          <div class="col">
+            <label for="">Device's interface</label>
+            <input type="text" name="interface" class="form-control" autocomplete="off" required />
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn btn-secondary btn-lg btn-block" type="submit" name="submit">Submit</button>
+        </div>
+  
+      </form>
+      <div>
+  
+        <a href="/admin/add" class="searchButton btn btn-outline-secondary">Return</a>
+      </div>
+  
+    </div>
+
+<%- include("../partials/bottom"); -%>

@@ -1,0 +1,24 @@
+{
+  "name": "skyrim-v2",
+  "version": "1.0.0",
+  "description": "MVC version of Dragonborn",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "Brenno Rodrigues, Hugo Chimello",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "csv-writer": "^1.5.0",
+    "ejs": "^2.7.2",
+    "express": "^4.17.1",
+    "express-ejs-layouts": "^2.5.0",
+    "fs": "0.0.1-security",
+    "lodash": "^4.17.15",
+    "mongoose": "^5.7.11",
+    "path": "^0.12.7",
+    "serve-favicon": "^2.5.0"
+  }
+}
