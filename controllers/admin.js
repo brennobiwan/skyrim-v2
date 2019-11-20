@@ -148,6 +148,110 @@ exports.postAddCircuit = (req, res, next) => {
         });
 };
 
+exports.postUpdate = (req, res, next) => {
+    const serialId = req.body.inputUpdate;
+    const az = req.body.inputForm;
+    Circuit.findOne({ _circuit: serialId, az: az })
+        .then(circuit => {
+            if (!circuit) {
+                res.render("error/fail", {
+                    fail: "Cross-Connect ID " + _.toUpper(serialId) + " is not registered for " + _.toUpper(az) + ".",
+                    route: "/admin/update"
+                });
+            } else {
+                res.render("admin/update-circuit", {
+                    ckt: circuit,
+                    oldPatchPanel: circuit.patchpanel,
+                    route: "/admin/update"
+                });
+            }
+        })
+        .catch();
+};
+
+exports.postUpdateCircuit = (req, res, next) => {
+    const serialId = _.toLower(req.body.serialId);
+    const serviceProvider = _.toLower(req.body.serviceProvider);
+    const bandwidth = req.body.bandwidth;
+    const patchPanel = _.toLower(req.body.patchPanel);
+    const patchPanelPort = _.toLower(req.body.port)
+    const device = _.toLower(req.body.device);
+    const interface = _.toLower(req.body.interface);
+    const ticket = _.toLower(req.body.ticket);
+    const oldPatchPanel = _.toLower(req.body.oldPatchPanel);
+    const oldDevice = _.toLower(req.body.oldDevice);
+
+    if (device[5] === "-") {
+        var az = _.toLower(device.slice(0, 5));
+    } else {
+        var az = _.toLower(device.slice(0, 4));
+    }
+
+    if (oldDevice[5] === "-") {
+        var oldAz = _.toLower(oldDevice.slice(0, 5));
+    } else {
+        var oldAz = _.toLower(oldDevice.slice(0, 4));
+    }
+
+    if (az !== oldAz) {
+        res.render("error/fail", {
+            fail: "The change must be in the same AZ.",
+            route: "/admin/update"
+        });
+    } else {
+        if (patchPanel === oldPatchPanel) {
+            Circuit.findOneAndUpdate({ _circuit: serialId, az: az }, {
+                _circuit: serialId,
+                serviceprovider: serviceProvider,
+                bandwidth: bandwidth,
+                patchpanel: patchPanel,
+                patchpanelport: patchPanelPort,
+                device: device,
+                interface: interface,
+                az: az,
+                cluster: device.slice(0, 3)
+            }, (err, result) => {
+                res.render("success/success", {
+                    success: "Cross-Connect ID " + _.toUpper(serialId) + " updated.",
+                    route: "/admin/update"
+                });
+            });
+        } else {
+            PatchPanel.findOne({ _patchpanel: patchPanel, az: az })
+                .then(patchpanel => {
+                    if (patchpanel.capacity === 0) {
+                        res.render("error/fail", {
+                            fail: "Patch-Panel " + _.toUpper(patchPanel) + " has reached its full capacity.",
+                            route: "/admin/update"
+                        });
+                    } else {
+                        Circuit.findOneAndUpdate({ _circuit: serialId, az: az }, {
+                            _circuit: serialId,
+                            serviceprovider: serviceProvider,
+                            bandwidth: bandwidth,
+                            patchpanel: patchPanel,
+                            patchpanelport: patchPanelPort,
+                            device: device,
+                            interface: interface,
+                            az: az,
+                            cluster: device.slice(0, 3)
+                        }, (err, result) => {
+                            PatchPanel.findOneAndUpdate({ _patchpanel: oldPatchPanel, az: az }, { $inc: { capacity: 1 }}, (err, result) => {
+                                PatchPanel.findOneAndUpdate({ _patchpanel: patchPanel, az: az }, { $inc: { capacity: -1 }}, (err, result) => {
+                                    res.render("success/success", {
+                                        success: "Cross-Connect ID " + _.toUpper(serialId) + " updated.",
+                                        route: "/admin/update"
+                                    });
+                                });
+                            });
+                        });
+                    }
+                })
+                .catch()
+        }   
+    }
+};
+
 // Decommission Submenu
 
 exports.getDecommissionCircuit = (req, res, next) => {

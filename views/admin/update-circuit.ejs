@@ -1,0 +1,67 @@
+<%- include("../partials/top"); -%>
+
+
+<div class="body">
+    <div class="body-content">
+  
+      <h2 class="title">Change the values you need and hit "Submit Changes".</h2>
+    
+      <form action="/admin/update-circuit" method="post" onsubmit="return confirm('Please, confirm the data before hitting OK');">
+        <input type="hidden" name="oldPatchPanel" value="<%= ckt.patchpanel %>">
+        <input type="hidden" name="oldDevice" value="<%= ckt.device %>">
+        <div class="row">
+          <label for="">Cross-Connect ID</label>
+          <input class="form-control" type="text" name="serialId" value="<%= ckt._circuit %>"  autocomplete="off" contenteditable="false" readonly />
+        </div>
+  
+        <div class="row">
+          <label for="">Service Provider / Peer</label>
+          <input class="form-control" type="text" name="serviceProvider" value="<%= ckt.serviceprovider %>" autocomplete="off" readonly />
+        </div>
+  
+        <div class="row">
+          <label for="">Bandwidth</label>
+          <input class="form-control" type=Number name="bandwidth" value="<%= ckt.bandwidth %>" autocomplete="off" required />
+        </div>
+  
+        <div class="row">
+          <div class="col">
+            <label for="">Patch-Panel ID</label>
+            <input type="text" name="patchPanel" class="form-control" value="<%= ckt.patchpanel %>" autocomplete="off" required />
+          </div>
+  
+          <div class="col">
+            <label for="">Patch-Panel Port</label>
+            <input type="text" name="port" class="form-control" value="<%= ckt.patchpanelport %>" autocomplete="off" required />
+          </div>
+        </div>
+  
+        <div class="row">
+          <div class="col">
+            <label for="">Device's hostname</label>
+            <input type="text" name="device" class="form-control" value="<%= ckt.device %>" placeholder="gru1-br-cor-r3" autocomplete="off" required />
+          </div>
+  
+          <div class="col">
+            <label for="">Device's interface</label>
+            <input type="text" name="interface" class="form-control" value="<%= ckt.interface %>" placeholder="et-0/0/11" autocomplete="off" required />
+          </div>
+        </div>
+        <button class="row btn btn-secondary btn-lg btn-block" type="submit" name="button">Submit Changes</button>
+      </form>
+  
+  
+    
+      <div>
+  
+      </div>
+  
+      <a href="<%= route %>" class="searchButton btn btn-outline-secondary">Return</a>
+  
+  
+  
+    </div>
+
+  
+<%- include("../partials/bottom"); -%>
+

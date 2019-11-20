@@ -29,6 +29,10 @@ router.get("/get-template", adminController.getTemplate)
 
 router.post("/add-circuit", adminController.postAddCircuit);
 
+router.post("/update", adminController.postUpdate);
+
+router.post("/update-circuit", adminController.postUpdateCircuit);
+
 // Decommission Submenu
 
 router.get("/decommission-circuit", adminController.getDecommissionCircuit);
