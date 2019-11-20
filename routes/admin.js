@@ -13,7 +13,7 @@ router.get("/update", adminController.getUpdate);
 
 router.get("/decommission", adminController.getDecommission);
 
-// Add Submenu
+// Add GET
 
 router.get("/add-circuit", adminController.getAddCircuit);
 
@@ -24,6 +24,10 @@ router.get("/add-az", adminController.getAddAz);
 router.get("/upload-csv", adminController.getUploadCsv);
 
 router.get("/get-template", adminController.getTemplate)
+
+// Add POST
+
+router.post("/add-circuit", adminController.postAddCircuit);
 
 // Decommission Submenu
 

@@ -2,8 +2,6 @@ const Mongoose = require("mongoose");
 
 const mongoose = require("../util/database");
 
-// const Schema = Mongoose.Schema();
-
 const circuitSchema = new Mongoose.Schema({
     _circuit: {
         type: String,

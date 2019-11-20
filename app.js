@@ -14,13 +14,13 @@ const userRoutes = require("./routes/user");
 const adminRoutes = require("./routes/admin");
 const errorRoute = require("./routes/error");
 
-app.use(favicon(__dirname + '/public/images/favicon.ico'));
+app.use(favicon(path.join(__dirname, '/public/images/favicon.ico')));
 
 // app.use((req, res, next) => {
 //     req.user = user;
 // });
 
-app.use("/admin", adminRoutes);
+app.use('/admin', adminRoutes);
 app.use(userRoutes);
 app.use(errorRoute);
 
