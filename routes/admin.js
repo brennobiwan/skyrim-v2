@@ -33,6 +33,10 @@ router.post("/update", adminController.postUpdate);
 
 router.post("/update-circuit", adminController.postUpdateCircuit);
 
+router.post("/add-az", adminController.postAddAz);
+
+router.post("/add-patchpanel", adminController.postAddPatchPanel);
+
 // Decommission Submenu
 
 router.get("/decommission-circuit", adminController.getDecommissionCircuit);

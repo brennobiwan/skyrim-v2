@@ -55,7 +55,7 @@ exports.getTemplate = (req, res, next) => {
     console.log("getTemplate in admin controllers");
 };
 
-// Add POST
+// Add Circuit POST
 
 exports.postAddCircuit = (req, res, next) => {
     const serialId = _.toLower(req.body.serialId);
@@ -148,6 +148,90 @@ exports.postAddCircuit = (req, res, next) => {
         });
 };
 
+// Add AZ POST
+
+exports.postAddAz = (req, res, next) => {
+    const az = _.toLower(req.body.az);
+    const cluster = _.toLower(az.slice(0, 3));
+    Az.findOne({ _id: az })
+        .then(site => {
+            if (site) {
+                res.render("error/fail", {
+                    fail: "AZ " + _.toUpper(az) + " is already registered.",
+                    route: "/admin/add"
+                });
+            } else {
+                const newAz = new Az({
+                    _id: _.toLower(az),
+                    cluster: _.toLower(az.slice(0, 3))
+                });
+                newAz.save();
+                res.render("success/success", {
+                    success: "AZ " + _.toUpper(az) + " registered",
+                    route: "/admin/add"
+                });
+            }
+        })
+        .catch();
+};
+
+// Add Patch-Panel POST
+
+exports.postAddPatchPanel = (req, res, next) => {
+    const patchPanel = _.toLower(req.body.patchPanelId);
+    const capacity = req.body.capacity;
+    const fullcapacity = req.body.capacity;
+    const rack = _.toLower(req.body.rack);
+    const type = req.body.connectionType;
+
+    if (rack[4] === ".") {
+        var az = _.toLower(rack.slice(0, 4));
+    } else {
+        var az = _.toLower(rack.slice(0, 5));
+    }
+
+    const cluster = az.slice(0, 3);
+
+    Az.findOne({ _id: az })
+        .then(site => {
+            if (!site) {
+                res.render("error/fail", {
+                    fail: "AZ needs to be registered prior to inserting Patch-Panels into that AZ.",
+                    route: "/admin/add"
+                });
+            } else {
+                PatchPanel.findOne({ az: az, _patchpanel: patchPanel })
+                    .then(patchpanel => {
+                        if (patchpanel) {
+                            res.render("error/fail", {
+                                fail: "Patch-Panel " + _.toUpper(patchPanel) + " already registered for " + _.toUpper(az) + ".",
+                                route: "/admin/add"
+                            });
+                        } else {
+                            const newPatchPanel = new PatchPanel({
+                                _patchpanel: patchPanel,
+                                capacity: capacity,
+                                fullcapacity: fullcapacity,
+                                rack: rack,
+                                az: az,
+                                cluster: cluster,
+                                type: type
+                            });
+                            newPatchPanel.save();
+                            res.render("success/success", {
+                                success: "New Patch-Panel added - " + _.toUpper(patchPanel),
+                                route: "/admin/add"
+                            });
+                        }
+                    })
+                    .catch();
+            }
+        })
+        .catch();
+};
+
+// Update POST
+
 exports.postUpdate = (req, res, next) => {
     const serialId = req.body.inputUpdate;
     const az = req.body.inputForm;
@@ -168,6 +252,8 @@ exports.postUpdate = (req, res, next) => {
         })
         .catch();
 };
+
+// Update Circuit POST
 
 exports.postUpdateCircuit = (req, res, next) => {
     const serialId = _.toLower(req.body.serialId);
