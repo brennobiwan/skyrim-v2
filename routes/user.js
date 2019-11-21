@@ -30,5 +30,9 @@ router.post("/generate-report", userController.postGenerateReport);
 
 router.get("/download-report", userController.getReportFile);
 
+// Capacity Tracker POST
+
+router.post("/capacity-tracker", userController.postCapacityTracker)
+
 module.exports = router;
 
