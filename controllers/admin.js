@@ -349,3 +349,48 @@ exports.getDecommissionPatchPanel = (req, res, next) => {
     console.log("getDecommissionCircuit in admin controllers");
     res.status(200).render("admin/decommission-patchpanel");
 };
+
+exports.postDelete = (req, res, next) => {
+    console.log("getDelete in admin controllers");
+    const inputDelete = _.toLower(req.body.inputDelete);
+    const az = _.toLower(req.body.az);
+
+    Circuit.findOne({ _circuit: inputDelete, az: az })
+        .then(circuit => {
+            if (!circuit) {
+                res.render("error/fail", {
+                    fail: "Cross-Connect ID " + _.toUpper(inputDelete) + " is not registered for " + _.toUpper(az) + ".",
+                    route: "/admin/decommission"
+                });
+            } else {
+                res.render("admin/delete-circuit", {
+                    ckt: circuit
+                });
+            }
+        })
+        .catch()
+}
+
+exports.postDeleteCircuit = (req, res, next) => {
+    const serialId = _.toLower(req.body.serialId);
+    const patchPanel = _.toLower(req.body.patchPanel);
+    const device = _.toLower(req.body.device);
+    if (device[5] === "-") {
+      var az = _.toLower(device.slice(0, 5));
+    } else {
+      var az = _.toLower(device.slice(0, 4));
+    }
+
+    Circuit.findOneAndDelete({ _circuit: serialId, az: az })
+        .then(circuit => {
+            PatchPanel.findOneAndUpdate({ _patchpanel: patchPanel, az: az }, { $inc: { capacity: -1 }})
+                .then(patchpanel => {
+                    res.render("success/success", {
+                        success: "Cross-Connect ID " + _.toUpper(serialId) + " has been decommissioned in " + _.toUpper(az) + ".",
+                        route: "/admin/decommission"
+                    });
+                })
+                .catch()
+        })
+        .catch()
+};

@@ -43,4 +43,8 @@ router.get("/decommission-circuit", adminController.getDecommissionCircuit);
 
 router.get("/decommission-patchpanel", adminController.getDecommissionPatchPanel);
 
+router.post("/delete", adminController.postDelete);
+
+router.post("/delete-circuit", adminController.postDeleteCircuit);
+
 module.exports = router;
