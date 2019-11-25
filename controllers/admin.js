@@ -394,3 +394,39 @@ exports.postDeleteCircuit = (req, res, next) => {
         })
         .catch()
 };
+
+exports.postDeletePatchPanel =(req, res, next) => {
+    const patchpanelId = _.toLower(req.body.inputDelete);
+    const az = _.toLower(req.body.az);
+
+    PatchPanel.findOne({ _patchpanel: patchpanelId, az: az })
+        .then(patchpanel => {
+            if (!patchpanel) {
+                res.render("error/fail", {
+                    fail: "Patch-Panel ID " + _.toUpper(patchpanelId) + " is not registered for " + _.toUpper(az) + ".",
+                    route: "/admin/decommission"
+                });
+            } else {
+                Circuit.find({ patchpanel: patchpanelId, az: az })
+                    .then(circuits => {
+                        if (circuits.length > 0) {
+                            res.render("error/fail", {
+                                fail: "Patch-Panel ID " + _.toUpper(patchpanelId) + " in " + _.toUpper(az) + " is not empty, therefore it cannot be decommissioned.",
+                                route: "/admin/decommission"
+                            });
+                        } else {
+                            PatchPanel.findOneAndDelete({ _patchpanel: patchpanelId, az: az })
+                                .then(patchpanel => {
+                                    res.render("success/success", {
+                                        success: "Patch-Panel ID " + _.toUpper(patchpanelId) + " has been decommissioned in " + _.toUpper(az) + ".",
+                                        route: "/admin/decommission"
+                                    });
+                                })
+                                .catch()
+                        }
+                    })
+                    .catch()
+            }
+        })
+        .catch()
+};

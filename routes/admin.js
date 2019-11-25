@@ -47,4 +47,6 @@ router.post("/delete", adminController.postDelete);
 
 router.post("/delete-circuit", adminController.postDeleteCircuit);
 
+router.post("/delete-patchpanel", adminController.postDeletePatchPanel);
+
 module.exports = router;
