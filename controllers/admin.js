@@ -3,6 +3,7 @@ const path = require("path");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const _ = require("lodash");
 const formidable = require("formidable");
+const csv = require('csv-parser');
 
 const Circuit = require("../models/circuit");
 const Az = require("../models/site");
@@ -364,14 +365,14 @@ exports.postUpload = (req, res, next) => {
     form.parse(req);
   
     form.on("fileBegin", function(name, file) {
-      file.path = __dirname + '/uploads/' + file.name;
+      file.path = path.join(__dirname, '../uploads/', file.name); 
     });
   
     form.on('file', function(name, file) {
       file[name] = "template.csv";
       // console.log(file.name);
   
-      fs.createReadStream(__dirname + "/uploads/" + file.name)
+      fs.createReadStream(path.join(__dirname, '../uploads/', file.name))
         .pipe(csv())
         .on("data", (data) => {
   
@@ -470,7 +471,7 @@ exports.postUpload = (req, res, next) => {
   
           // console.log(uniqueAzs.length + uniqueAzs[0]);
           if (uniqueAzs.length === 1) {
-            Xconn.countDocuments({
+            Circuit.countDocuments({
               az: uniqueAzs[0]
             }, function(err, foundXconn) {
               if (!foundXconn) {
@@ -491,14 +492,14 @@ exports.postUpload = (req, res, next) => {
                       });
   
                       if (uniquePatchPanels.length !== patchpanelsDB.length) {
-                        res.render("fail.ejs", {
+                        res.render("error/fail.ejs", {
                           fail: "Patch-Panels must be registered prior to uploading the CSV file",
-                          route: "/add"
+                          route: "/admin/add"
                         });
                       } else if (_.toLower(uniquePatchPanels.sort()) !== _.toLower(patchpanelsDB.sort())) {
-                        res.render("fail.ejs", {
+                        res.render("error/fail.ejs", {
                           fail: "All Patch-Panels from the CSV file must match the ones registered on the database",
-                          route: "/add"
+                          route: "/admin/add"
                         });
                       } else {
                         // let resultsString = JSON.stringify(results);
@@ -520,7 +521,7 @@ exports.postUpload = (req, res, next) => {
                         if (uniqueCircuitArray.length === circuitArray.length) {
                           // console.log("match");
   
-                          Xconn.insertMany(resultsObj, function(err, docs) {
+                          Circuit.insertMany(resultsObj, function(err, docs) {
                             // docs.forEach((panel) => {
                             //   console.log(panel.patchpanel);
                             //   PatchPanel.findOne({az: uniqueAzs[0], _patchpanel: panel.patchpanel}, (err, foundPP) => {
@@ -541,7 +542,7 @@ exports.postUpload = (req, res, next) => {
                               ppRack = rackPosition[panel];
                               console.log(ppRack);
   
-                              Xconn.updateMany({
+                              Circuit.updateMany({
                                 az: uniqueAzs[0],
                                 patchpanel: panel
                               }, {
@@ -579,7 +580,7 @@ exports.postUpload = (req, res, next) => {
   
   
   
-                            res.render("success.ejs", {
+                            res.render("success/success.ejs", {
                               success: "Records updated for " + _.toUpper(uniqueAzs[0]),
                               route: "/"
                             });
@@ -592,7 +593,7 @@ exports.postUpload = (req, res, next) => {
   
                         } else {
                           // console.log("do not match");
-                          res.render("fail.ejs", {
+                          res.render("error/fail.ejs", {
                             fail: "There are duplicated IDs in the CSV file. Fix that prior to uploading the file",
                             route: "/"
                           });
@@ -623,25 +624,25 @@ exports.postUpload = (req, res, next) => {
                     });
   
                   } else {
-                    res.render("fail.ejs", {
+                    res.render("error/fail.ejs", {
                       fail: "No AZ record found for " + uniqueAzs[0],
-                      route: "/add"
+                      route: "/admin/add"
                     });
                   }
                 });
   
   
               } else {
-                res.render("fail.ejs", {
+                res.render("error/fail.ejs", {
                   fail: _.toUpper(uniqueAzs[0]) + " already contains Cross-Connections registered. Please add new connections individually",
-                  route: "/add"
+                  route: "/admin/add"
                 });
               }
             });
           } else {
-            res.render("fail.ejs", {
+            res.render("error/fail.ejs", {
               fail: "Please upload one CSV file per AZ",
-              route: "/upload-cv"
+              route: "/admin/upload-cv"
             });
           }
   
@@ -662,7 +663,7 @@ exports.postUpload = (req, res, next) => {
           //   }
           // });
   
-          fs.unlink(__dirname + "/uploads/" + file.name, (err) => {
+          fs.unlink(path.join(__dirname, '../uploads/', file.name), (err) => {
             if (err) {
               console.error(err)
               return
@@ -726,7 +727,7 @@ exports.postDeleteCircuit = (req, res, next) => {
 
     Circuit.findOneAndDelete({ _circuit: serialId, az: az })
         .then(circuit => {
-            PatchPanel.findOneAndUpdate({ _patchpanel: patchPanel, az: az }, { $inc: { capacity: -1 }})
+            PatchPanel.findOneAndUpdate({ _patchpanel: patchPanel, az: az }, { $inc: { capacity: 1 }})
                 .then(patchpanel => {
                     res.render("success/success", {
                         success: "Cross-Connect ID " + _.toUpper(serialId) + " has been decommissioned in " + _.toUpper(az) + ".",
