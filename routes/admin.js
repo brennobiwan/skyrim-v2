@@ -37,11 +37,15 @@ router.post("/add-az", adminController.postAddAz);
 
 router.post("/add-patchpanel", adminController.postAddPatchPanel);
 
+router.post("/upload", adminController.postUpload);
+
 // Decommission Submenu
 
 router.get("/decommission-circuit", adminController.getDecommissionCircuit);
 
 router.get("/decommission-patchpanel", adminController.getDecommissionPatchPanel);
+
+// router.get("/download-template", adminController.getDownloadTemplate);
 
 router.post("/delete", adminController.postDelete);
 

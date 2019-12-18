@@ -1,6 +1,8 @@
 const fs = require("fs");
+const path = require("path");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const _ = require("lodash");
+const formidable = require("formidable");
 
 const Circuit = require("../models/circuit");
 const Az = require("../models/site");
@@ -53,6 +55,9 @@ exports.getUploadCsv = (req, res, next) => {
 
 exports.getTemplate = (req, res, next) => {
     console.log("getTemplate in admin controllers");
+    res.setHeader('Content-disposition', 'attachment; filename=template.csv');
+    res.setHeader('content-type', 'text/csv');
+    res.download(path.join(__dirname, '../downloads/template.csv')); 
 };
 
 // Add Circuit POST
@@ -338,6 +343,337 @@ exports.postUpdateCircuit = (req, res, next) => {
     }
 };
 
+// Upload CSV File
+
+exports.postUpload = (req, res, next) => {
+    const form = new formidable.IncomingForm();
+    //https://shiya.io/simple-file-upload-with-express-js-and-formidable-in-node-js/
+    const oldPatchPanel = "";
+    const ticket = "";
+    const actionAddUpdate = "addcircuit";
+    const results = [];
+    const azs = [];
+    let uniqueAzs = [];
+    const patchpanels = [];
+    let uniquePatchPanels = [];
+    const patchpanelsDB = [];
+    const patchpanelCount = {};
+    const patchpanelsRack = {};
+  
+  
+    form.parse(req);
+  
+    form.on("fileBegin", function(name, file) {
+      file.path = __dirname + '/uploads/' + file.name;
+    });
+  
+    form.on('file', function(name, file) {
+      file[name] = "template.csv";
+      // console.log(file.name);
+  
+      fs.createReadStream(__dirname + "/uploads/" + file.name)
+        .pipe(csv())
+        .on("data", (data) => {
+  
+          results.push(data);
+  
+          // console.log(results);
+  
+  
+          // console.log(data.az + data.patchpanel);
+  
+  
+  
+          // fs.unlink(file.name);
+          // Az.countDocuments({_id: data.az}, function(err, foundAz) {
+          //   if (foundAz === 1) {
+          //     PatchPanel.countDocuments({_patchpanel: data.patchPanel, az: data.az}, function(err, foundPatchPanel) {
+          //       if (foundPatchPanel === 1) {
+          //         PatchPanel.findOne({_patchpanel: data.patchPanel, az: data.az}, function(err, pp) {
+          //           const rack = pp.rack;
+          //           if (pp.capacity > 0) {
+          //             Xconn.countDocuments({_circuit: data._circuit, az: data.az}, function(err, doc) {
+          //               if (doc === 0) {
+          //                 const newCircuit = new Xconn({
+          //                   _circuit: data._circuit,
+          //                   serviceprovider: data.serviceProvider,
+          //                   bandwidth: data.bandwidth,
+          //                   rack: rack,
+          //                   patchpanel: data.patchPanel,
+          //                   patchpanelport: data.patchPanelPort,
+          //                   device: data.device,
+          //                   interface: data.interface,
+          //                   az: data.az,
+          //                   cluster: data.cluster
+          //                 });
+          //                 newCircuit.save();
+          //
+          //                 PatchPanel.findOneAndUpdate({az: data.az, _patchpanel: data.patchPanel}, {$inc: {capacity: -1}}, function(err, ppupdate) {});
+          //               }
+          //             });
+          //           }
+          //         });
+          //       }
+          //     });
+          //   }
+          // });
+        })
+        .on("end", () => {
+          // console.log(results);
+          // firstInputDatabase(results);
+  
+          let resultsString = JSON.stringify(results);
+          let resultsLower = _.toLower(resultsString);
+          let resultsObj = JSON.parse(resultsLower);
+          let rackPosition = {};
+          let ppRack;
+  
+  
+  
+          resultsObj.forEach(arrayFile => {
+            azs.push(arrayFile.az);
+            patchpanels.push(arrayFile.patchpanel);
+            PatchPanel.findOne({
+              az: arrayFile.az,
+              _patchpanel: arrayFile.patchpanel
+            }, (err, doc) => {
+              // console.log(doc.rack);
+              rackPosition[arrayFile.patchpanel] = doc.rack;
+            });
+          });
+  
+  
+  
+  
+  
+          // https://wsvincent.com/javascript-remove-duplicates-array/
+          uniqueAzs = [...new Set(azs)];
+          uniquePatchPanels = [...new Set(patchpanels)];
+  
+  
+  
+          uniquePatchPanels.forEach((panel) => {
+            let count = 0;
+            for (var i = 0; i < patchpanels.length; i++) {
+              if (panel === patchpanels[i]) {
+                count++;
+              }
+            }
+            patchpanelCount[panel] = count;
+            // console.log(patchpanelCount);
+          });
+  
+  
+  
+  
+  
+  
+          // console.log(uniqueAzs.length + uniqueAzs[0]);
+          if (uniqueAzs.length === 1) {
+            Xconn.countDocuments({
+              az: uniqueAzs[0]
+            }, function(err, foundXconn) {
+              if (!foundXconn) {
+                // console.log(uniqueAzs[0]);
+                Az.countDocuments({
+                  _id: uniqueAzs[0]
+                }, function(err, foundAz) {
+                  // console.log(foundAz);
+                  if (foundAz) {
+  
+                    PatchPanel.find({
+                      az: uniqueAzs[0]
+                    }, function(err, foundPP) {
+                      foundPP.forEach((pps) => {
+                        // console.log(pps._patchpanel);
+                        patchpanelsDB.push(pps._patchpanel);
+                        patchpanelsRack[pps._patchpanel] = pps.rack;
+                      });
+  
+                      if (uniquePatchPanels.length !== patchpanelsDB.length) {
+                        res.render("fail.ejs", {
+                          fail: "Patch-Panels must be registered prior to uploading the CSV file",
+                          route: "/add"
+                        });
+                      } else if (_.toLower(uniquePatchPanels.sort()) !== _.toLower(patchpanelsDB.sort())) {
+                        res.render("fail.ejs", {
+                          fail: "All Patch-Panels from the CSV file must match the ones registered on the database",
+                          route: "/add"
+                        });
+                      } else {
+                        // let resultsString = JSON.stringify(results);
+                        // let resultsLower = _.toLower(resultsString);
+                        // let resultsObj = JSON.parse(resultsLower);
+  
+                        // console.log(foundPP);
+  
+                        const circuitArray = [];
+  
+                        resultsObj.forEach((element) => {
+                          circuitArray.push(element._circuit);
+                        });
+                        let uniqueCircuitArray = [...new Set(circuitArray)];
+  
+                        // console.log(circuitArray);
+                        // console.log(uniqueCircuitArray);
+  
+                        if (uniqueCircuitArray.length === circuitArray.length) {
+                          // console.log("match");
+  
+                          Xconn.insertMany(resultsObj, function(err, docs) {
+                            // docs.forEach((panel) => {
+                            //   console.log(panel.patchpanel);
+                            //   PatchPanel.findOne({az: uniqueAzs[0], _patchpanel: panel.patchpanel}, (err, foundPP) => {
+                            //     console.log(foundPP._patchpanel);
+                            //
+                            //     // foundPP.forEach((pp) => {
+                            //     //   Xconn.updateMany({az: uniqueAzs[0], patchpanel: pp.patchpanel}, {rack: pp.rack}, () => {
+                            //     //     // console.log(pp.rack);
+                            //     //   });
+                            //     //
+                            //     // });
+                            //     // Xconn.updateOne({az: uniqueAzs[0], patchpanel: panel}, {rack: foundPP.rack});
+                            //   });
+                            // });
+  
+                            uniquePatchPanels.forEach((panel) => {
+                              let amountOfXconns = patchpanelCount[panel];
+                              ppRack = rackPosition[panel];
+                              console.log(ppRack);
+  
+                              Xconn.updateMany({
+                                az: uniqueAzs[0],
+                                patchpanel: panel
+                              }, {
+                                rack: ppRack
+                              }, (err, docs) => {
+                                console.log("rack: " + docs.rack);
+                                console.log(docs.n, docs.nModified);
+                              });
+  
+                              // console.log(amountOfXconns);
+                              PatchPanel.updateOne({
+                                az: uniqueAzs[0],
+                                _patchpanel: panel
+                              }, {
+                                $inc: {
+                                  capacity: -amountOfXconns
+                                }
+                              }, () => {
+                                // console.log("Patch-panel " + panel + " updated");
+                                // Xconn.updateOne({az: uniqueAzs[0], patchpanel: panel}, {rack: });
+                                // Xconn.updateOne({az: uniqueAzs[0], patchpanel: panel}, )
+  
+                              });
+  
+                              // Xconn.updateMany({az: uniqueAzs[0], patchpanel: panel}, {rack: ppRack}, (err, docs) => {
+                              //   console.log("rack: " + docs.rack);
+                              //   console.log(docs.n, docs.nModified);
+                              // });
+                              // console.log(rackPosition[panel]);
+  
+  
+                            });
+  
+  
+  
+  
+  
+                            res.render("success.ejs", {
+                              success: "Records updated for " + _.toUpper(uniqueAzs[0]),
+                              route: "/"
+                            });
+                          });
+  
+  
+  
+  
+  
+  
+                        } else {
+                          // console.log("do not match");
+                          res.render("fail.ejs", {
+                            fail: "There are duplicated IDs in the CSV file. Fix that prior to uploading the file",
+                            route: "/"
+                          });
+                        }
+  
+                        // console.log(elementArray);
+  
+  
+  
+  
+                        // uniquePatchPanels.forEach((panel) => {
+                        //   let amountOfXconns = patchpanelCount[panel];
+                        //   // console.log(amountOfXconns);
+                        //   PatchPanel.updateOne({_patchpanel: panel}, {$inc: {capacity: -amountOfXconns}}, () => {
+                        //     console.log("Patch-panel " + panel + " updated");
+                        //   });
+                        // });
+                        // console.log(foundPP);
+  
+  
+                        // Xconn.insertMany(resultsObj, function(err, docs){
+                        //   res.render("success.ejs", {
+                        //     success: "Records updated for " + _.toUpper(uniqueAzs[0]),
+                        //     route: "/"
+                        //   });
+                        // });
+                      }
+                    });
+  
+                  } else {
+                    res.render("fail.ejs", {
+                      fail: "No AZ record found for " + uniqueAzs[0],
+                      route: "/add"
+                    });
+                  }
+                });
+  
+  
+              } else {
+                res.render("fail.ejs", {
+                  fail: _.toUpper(uniqueAzs[0]) + " already contains Cross-Connections registered. Please add new connections individually",
+                  route: "/add"
+                });
+              }
+            });
+          } else {
+            res.render("fail.ejs", {
+              fail: "Please upload one CSV file per AZ",
+              route: "/upload-cv"
+            });
+          }
+  
+          // Xconn.countDocuments({az: az[0]}, function(err, foundXconn){
+          //   if (!foundXconn) {
+          //     Xconn.insertMany(results, function(err, docs){
+          //       console.log(docs);
+          //       res.render("success.ejs", {
+          //         success: "Cross-Connect records uploaded sucessfully",
+          //         route: "/"
+          //       });
+          //     });
+          //   } else {
+          //     res.render("fail.ejs", {
+          //       fail: _.toUpper(az[0]) + " contains Cross-Connects registered. Please either decommission all connections for your AZ or upload the new circuits one by one",
+          //       route: "/"
+          //     });
+          //   }
+          // });
+  
+          fs.unlink(__dirname + "/uploads/" + file.name, (err) => {
+            if (err) {
+              console.error(err)
+              return
+            }
+          });
+  
+        });
+    });
+}
+
+
 // Decommission Submenu
 
 exports.getDecommissionCircuit = (req, res, next) => {
@@ -349,6 +685,13 @@ exports.getDecommissionPatchPanel = (req, res, next) => {
     console.log("getDecommissionCircuit in admin controllers");
     res.status(200).render("admin/decommission-patchpanel");
 };
+
+// exports.getDownloadTemplate = (req, res, next) => {
+//     console.log("getDownloadTemplate in admin controllers");
+//     res.setHeader('Content-disposition', 'attachment; filename=template.csv');
+//     res.setHeader('content-type', 'text/csv');
+//     res.download(path.join(__dirname, '../downloads/template.csv'));
+// };
 
 exports.postDelete = (req, res, next) => {
     console.log("getDelete in admin controllers");

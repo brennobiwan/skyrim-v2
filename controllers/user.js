@@ -186,8 +186,6 @@ exports.postSearchCircuit = (req, res, next) => {
     const searchTitle = _.toUpper(valueOfData);
     query[typeOfData] = valueOfData;
 
-    console.log(typeOfData, valueOfData, queryOption, queryParameter);
-
     const sort = { az: 1 };
 
     if (queryOption === "allrecords") {        
