@@ -634,7 +634,7 @@ exports.postUpload = (req, res, next) => {
   
               } else {
                 res.render("error/fail.ejs", {
-                  fail: _.toUpper(uniqueAzs[0]) + " already contains Cross-Connections registered. Please add new connections individually",
+                  fail: _.toUpper(uniqueAzs[0]) + " already contains Cross-Connections registered. Please add new connections individually.",
                   route: "/admin/add"
                 });
               }
